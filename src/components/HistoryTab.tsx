@@ -5,19 +5,24 @@ import {
   endOfMonth,
   endOfWeek,
   format,
+  isAfter,
   isSameDay,
   isSameMonth,
   isToday,
+  startOfDay,
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
 import { useSettings } from '../hooks/useSettings';
-import { useDrinksInRange, useDeleteDrink } from '../hooks/useDrinks';
-import { dayRange, weekRange, monthRange, weekStartsOn, dayKey } from '../lib/dates';
-import { formatStandards } from '../lib/standards';
+import { usePresets } from '../hooks/usePresets';
+import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
+import { useNow } from '../hooks/useNow';
+import { dayRange, last7d, last30d, weekStartsOn, dayKey } from '../lib/dates';
+import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { groupByDay, sumStandards, countDrinkingDays, levelFor, type LimitLevel } from '../lib/stats';
 import { LimitBar } from './LimitBar';
 import { DrinkList } from './DrinkList';
+import { AddDrinkForm, type NewDrink } from './AddDrinkForm';
 
 const DOT_COLOR: Record<LimitLevel, string> = {
   ok: 'bg-emerald-500',
@@ -28,10 +33,13 @@ const DOT_COLOR: Record<LimitLevel, string> = {
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export function HistoryTab() {
+  const now = useNow();
   const [cursor, setCursor] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState<Date>(() => new Date());
 
   const settings = useSettings();
+  const presets = usePresets();
+  const addDrink = useAddDrink();
   const deleteDrink = useDeleteDrink();
 
   const gridStart = startOfWeek(startOfMonth(cursor), { weekStartsOn });
@@ -44,17 +52,29 @@ export function HistoryTab() {
   const monthDrinksForGrid = useDrinksInRange(gridStart.getTime(), gridEnd.getTime());
   const byDay = useMemo(() => groupByDay(monthDrinksForGrid), [monthDrinksForGrid]);
 
-  const month = monthRange(cursor);
-  const week = weekRange(new Date());
+  const window7d = last7d(now);
+  const window30d = last30d(now);
   const selectedRange = dayRange(selectedDay);
 
-  const weekDrinks = useDrinksInRange(week.start, week.end);
-  const monthDrinks = useDrinksInRange(month.start, month.end);
+  const last7dDrinks = useDrinksInRange(window7d.start, window7d.end);
+  const last30dDrinks = useDrinksInRange(window30d.start, window30d.end);
   const selectedDayDrinks = useDrinksInRange(selectedRange.start, selectedRange.end);
 
-  const weekTotal = sumStandards(weekDrinks);
-  const weekDays = countDrinkingDays(weekDrinks);
-  const monthDays = countDrinkingDays(monthDrinks);
+  const total7d = sumStandards(last7dDrinks);
+  const drinkingDays7d = countDrinkingDays(last7dDrinks);
+  const drinkingDays30d = countDrinkingDays(last30dDrinks);
+
+  const isFutureDay = isAfter(startOfDay(selectedDay), startOfDay(now));
+
+  async function handleAdd(entry: NewDrink) {
+    await addDrink({
+      timestamp: entry.timestamp,
+      volumeMl: entry.volumeMl,
+      abvPercent: entry.abvPercent,
+      standards: roundStandards(calcStandards(entry.volumeMl, entry.abvPercent)),
+      label: entry.label,
+    });
+  }
 
   return (
     <div className="mx-auto max-w-md space-y-5 px-4 pb-24 pt-6">
@@ -65,14 +85,14 @@ export function HistoryTab() {
 
       <section className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
         <LimitBar
-          label="This week"
-          value={Number(formatStandards(weekTotal))}
+          label="Last 7 days"
+          value={roundStandards(total7d)}
           limit={settings.weeklyStandardsLimit}
           formatValue={formatStandards}
           suffix="standards"
         />
-        <LimitBar label="Drinking days this week" value={weekDays} limit={settings.weeklyDrinkingDaysLimit} suffix="days" />
-        <LimitBar label="Drinking days this month" value={monthDays} limit={settings.monthlyDrinkingDaysLimit} suffix="days" />
+        <LimitBar label="Drinking days (7d)" value={drinkingDays7d} limit={settings.weeklyDrinkingDaysLimit} suffix="days" />
+        <LimitBar label="Drinking days (30d)" value={drinkingDays30d} limit={settings.monthlyDrinkingDaysLimit} suffix="days" />
       </section>
 
       <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
@@ -141,6 +161,19 @@ export function HistoryTab() {
           {formatStandards(sumStandards(selectedDayDrinks))} standards
         </h2>
         <DrinkList drinks={selectedDayDrinks} onDelete={deleteDrink} emptyText="No drinks logged this day." />
+      </section>
+
+      <section>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Add a drink for {isToday(selectedDay) ? 'today' : format(selectedDay, 'd MMMM')}
+        </h2>
+        {isFutureDay ? (
+          <p className="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-500">
+            Pick today or a past day to log a drink.
+          </p>
+        ) : (
+          <AddDrinkForm presets={presets} targetDay={selectedDay} showTimePicker onAdd={handleAdd} />
+        )}
       </section>
     </div>
   );

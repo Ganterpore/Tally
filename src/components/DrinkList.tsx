@@ -6,9 +6,16 @@ interface DrinkListProps {
   drinks: DrinkEntry[];
   onDelete: (id: number) => void;
   emptyText?: string;
+  /** Show the date alongside the time — useful when the list can span more than one calendar day. */
+  showDate?: boolean;
 }
 
-export function DrinkList({ drinks, onDelete, emptyText = 'Nothing logged yet.' }: DrinkListProps) {
+export function DrinkList({
+  drinks,
+  onDelete,
+  emptyText = 'Nothing logged yet.',
+  showDate = false,
+}: DrinkListProps) {
   if (drinks.length === 0) {
     return <p className="py-4 text-center text-sm text-slate-500">{emptyText}</p>;
   }
@@ -25,7 +32,7 @@ export function DrinkList({ drinks, onDelete, emptyText = 'Nothing logged yet.' 
               {d.label || `${d.volumeMl}mL @ ${d.abvPercent}%`}
             </p>
             <p className="text-xs text-slate-500">
-              {format(d.timestamp, 'h:mm a')} · {d.volumeMl}mL @ {d.abvPercent}%
+              {format(d.timestamp, showDate ? 'd MMM, h:mm a' : 'h:mm a')} · {d.volumeMl}mL @ {d.abvPercent}%
             </p>
           </div>
           <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-300">

@@ -60,34 +60,35 @@ function LimitsSection() {
     <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
       <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Limits</h2>
       <p className="mb-2 text-xs text-slate-500">
-        Australia's alcohol guidelines suggest no more than 4 standard drinks on any day and no more
-        than 10 a week, to reduce lifetime health risk. These are guides, not rules — set what's
-        right for you.
+        Australia's alcohol guidelines suggest no more than 4 standard drinks in any 24 hours and no
+        more than 10 in any 7 days, to reduce lifetime health risk. These are guides, not rules — set
+        what's right for you. All of these track on a rolling basis (e.g. "last 24 hours"), not
+        calendar days/weeks/months.
       </p>
       <div className="divide-y divide-slate-800">
         <NumberField
-          label="Daily standard drinks"
+          label="Standard drinks per 24h"
           value={settings.dailyStandardsLimit}
           step={0.5}
           suffix="standards"
           onCommit={(n) => set({ dailyStandardsLimit: n })}
         />
         <NumberField
-          label="Weekly standard drinks"
+          label="Standard drinks per 7d"
           value={settings.weeklyStandardsLimit}
           step={0.5}
           suffix="standards"
           onCommit={(n) => set({ weeklyStandardsLimit: n })}
         />
         <NumberField
-          label="Drinking days per week"
+          label="Drinking days per 7d"
           value={settings.weeklyDrinkingDaysLimit}
           step={1}
           suffix="days"
           onCommit={(n) => set({ weeklyDrinkingDaysLimit: n })}
         />
         <NumberField
-          label="Drinking days per month"
+          label="Drinking days per 30d"
           value={settings.monthlyDrinkingDaysLimit}
           step={1}
           suffix="days"

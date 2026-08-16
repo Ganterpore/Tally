@@ -1,44 +1,45 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/db';
 import { useSettings } from '../hooks/useSettings';
+import { usePresets } from '../hooks/usePresets';
 import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
-import { dayRange, weekRange } from '../lib/dates';
+import { useNow } from '../hooks/useNow';
+import { last24h, last7d } from '../lib/dates';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { sumStandards, countDrinkingDays, levelFor } from '../lib/stats';
 import { LimitBar } from './LimitBar';
-import { DrinkForm } from './DrinkForm';
+import { AddDrinkForm, type NewDrink } from './AddDrinkForm';
 import { DrinkList } from './DrinkList';
 
 export function LogTab() {
-  const now = new Date();
-  const today = dayRange(now);
-  const week = weekRange(now);
+  const now = useNow();
+  const window24h = last24h(now);
+  const window7d = last7d(now);
 
   const settings = useSettings();
-  const presets = useLiveQuery(() => db.presets.toArray(), []) ?? [];
-  const todaysDrinks = useDrinksInRange(today.start, today.end);
-  const weeksDrinks = useDrinksInRange(week.start, week.end);
+  const presets = usePresets();
+  const last24hDrinks = useDrinksInRange(window24h.start, window24h.end);
+  const last7dDrinks = useDrinksInRange(window7d.start, window7d.end);
 
   const addDrink = useAddDrink();
   const deleteDrink = useDeleteDrink();
 
-  const todayTotal = sumStandards(todaysDrinks);
-  const weekTotal = sumStandards(weeksDrinks);
-  const weekDrinkingDays = countDrinkingDays(weeksDrinks);
+  const total24h = sumStandards(last24hDrinks);
+  const total7d = sumStandards(last7dDrinks);
+  const drinkingDays7d = countDrinkingDays(last7dDrinks);
 
   const breaches = [
-    levelFor(todayTotal, settings.dailyStandardsLimit) === 'over' && 'today’s standard drinks limit',
-    levelFor(weekTotal, settings.weeklyStandardsLimit) === 'over' && 'this week’s standard drinks limit',
-    levelFor(weekDrinkingDays, settings.weeklyDrinkingDaysLimit) === 'over' && 'this week’s drinking-days limit',
+    levelFor(total24h, settings.dailyStandardsLimit) === 'over' && 'your last-24-hour standard drinks limit',
+    levelFor(total7d, settings.weeklyStandardsLimit) === 'over' && 'your last-7-day standard drinks limit',
+    levelFor(drinkingDays7d, settings.weeklyDrinkingDaysLimit) === 'over' &&
+      'your last-7-day drinking-days limit',
   ].filter(Boolean) as string[];
 
-  async function handleAdd(volumeMl: number, abvPercent: number, label?: string) {
+  async function handleAdd(entry: NewDrink) {
     await addDrink({
-      timestamp: Date.now(),
-      volumeMl,
-      abvPercent,
-      standards: roundStandards(calcStandards(volumeMl, abvPercent)),
-      label,
+      timestamp: entry.timestamp,
+      volumeMl: entry.volumeMl,
+      abvPercent: entry.abvPercent,
+      standards: roundStandards(calcStandards(entry.volumeMl, entry.abvPercent)),
+      label: entry.label,
     });
   }
 
@@ -59,55 +60,42 @@ export function LogTab() {
 
       <section className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
         <LimitBar
-          label="Today"
-          value={roundStandards(todayTotal)}
+          label="Last 24 hours"
+          value={roundStandards(total24h)}
           limit={settings.dailyStandardsLimit}
           formatValue={formatStandards}
           suffix="standards"
         />
         <LimitBar
-          label="This week"
-          value={roundStandards(weekTotal)}
+          label="Last 7 days"
+          value={roundStandards(total7d)}
           limit={settings.weeklyStandardsLimit}
           formatValue={formatStandards}
           suffix="standards"
         />
         <LimitBar
-          label="Drinking days this week"
-          value={weekDrinkingDays}
+          label="Drinking days (7d)"
+          value={drinkingDays7d}
           limit={settings.weeklyDrinkingDaysLimit}
           suffix="days"
         />
       </section>
 
-      {presets.length > 0 && (
-        <section>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Quick add</h2>
-          <div className="flex flex-wrap gap-2">
-            {presets.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => handleAdd(p.volumeMl, p.abvPercent, p.label)}
-                className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:border-brand hover:text-brand"
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Custom drink</h2>
-        <DrinkForm onAdd={handleAdd} />
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Add a drink</h2>
+        <AddDrinkForm presets={presets} targetDay={now} showTimePicker={false} onAdd={handleAdd} />
       </section>
 
       <section>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Logged today ({todaysDrinks.length})
+          Last 24 hours ({last24hDrinks.length})
         </h2>
-        <DrinkList drinks={todaysDrinks} onDelete={deleteDrink} emptyText="No drinks logged today yet." />
+        <DrinkList
+          drinks={last24hDrinks}
+          onDelete={deleteDrink}
+          emptyText="Nothing logged in the last 24 hours."
+          showDate
+        />
       </section>
     </div>
   );
