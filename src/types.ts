@@ -18,6 +18,8 @@ export interface Settings {
   weeklyStandardsLimit: number;
   weeklyDrinkingDaysLimit: number;
   monthlyDrinkingDaysLimit: number;
+  /** When tracking started, in epoch ms — the floor for streak calculations (we have no data before this). */
+  createdAt: number;
 }
 
 /** A quick-add shortcut for a common drink. */
@@ -28,12 +30,14 @@ export interface Preset {
   abvPercent: number;
 }
 
+/** Fallback shown only before the real settings row has loaded from the DB. */
 export const DEFAULT_SETTINGS: Settings = {
   id: 1,
   dailyStandardsLimit: 4,
   weeklyStandardsLimit: 10,
   weeklyDrinkingDaysLimit: 7,
   monthlyDrinkingDaysLimit: 31,
+  createdAt: Date.now(),
 };
 
 export const DEFAULT_PRESETS: Omit<Preset, 'id'>[] = [

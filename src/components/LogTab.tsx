@@ -2,6 +2,7 @@ import { useSettings } from '../hooks/useSettings';
 import { usePresets } from '../hooks/usePresets';
 import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
 import { useNow } from '../hooks/useNow';
+import { useStreaks } from '../hooks/useStreaks';
 import { last24h, last7d } from '../lib/dates';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { sumStandards, countDrinkingDays, levelFor } from '../lib/stats';
@@ -16,6 +17,7 @@ export function LogTab() {
 
   const settings = useSettings();
   const presets = usePresets();
+  const streaks = useStreaks(now);
   const last24hDrinks = useDrinksInRange(window24h.start, window24h.end);
   const last7dDrinks = useDrinksInRange(window7d.start, window7d.end);
 
@@ -65,6 +67,7 @@ export function LogTab() {
           limit={settings.dailyStandardsLimit}
           formatValue={formatStandards}
           suffix="standards"
+          streakDays={streaks.daily}
         />
         <LimitBar
           label="Last 7 days"
@@ -72,12 +75,14 @@ export function LogTab() {
           limit={settings.weeklyStandardsLimit}
           formatValue={formatStandards}
           suffix="standards"
+          streakDays={streaks.weeklyStandards}
         />
         <LimitBar
           label="Drinking days (7d)"
           value={drinkingDays7d}
           limit={settings.weeklyDrinkingDaysLimit}
           suffix="days"
+          streakDays={streaks.weeklyDrinkingDays}
         />
       </section>
 

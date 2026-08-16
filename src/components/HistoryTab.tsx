@@ -17,6 +17,7 @@ import { useSettings } from '../hooks/useSettings';
 import { usePresets } from '../hooks/usePresets';
 import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
 import { useNow } from '../hooks/useNow';
+import { useStreaks } from '../hooks/useStreaks';
 import { dayRange, last7d, last30d, weekStartsOn, dayKey } from '../lib/dates';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { groupByDay, sumStandards, countDrinkingDays, levelFor, type LimitLevel } from '../lib/stats';
@@ -39,6 +40,7 @@ export function HistoryTab() {
 
   const settings = useSettings();
   const presets = usePresets();
+  const streaks = useStreaks(now);
   const addDrink = useAddDrink();
   const deleteDrink = useDeleteDrink();
 
@@ -90,9 +92,22 @@ export function HistoryTab() {
           limit={settings.weeklyStandardsLimit}
           formatValue={formatStandards}
           suffix="standards"
+          streakDays={streaks.weeklyStandards}
         />
-        <LimitBar label="Drinking days (7d)" value={drinkingDays7d} limit={settings.weeklyDrinkingDaysLimit} suffix="days" />
-        <LimitBar label="Drinking days (30d)" value={drinkingDays30d} limit={settings.monthlyDrinkingDaysLimit} suffix="days" />
+        <LimitBar
+          label="Drinking days (7d)"
+          value={drinkingDays7d}
+          limit={settings.weeklyDrinkingDaysLimit}
+          suffix="days"
+          streakDays={streaks.weeklyDrinkingDays}
+        />
+        <LimitBar
+          label="Drinking days (30d)"
+          value={drinkingDays30d}
+          limit={settings.monthlyDrinkingDaysLimit}
+          suffix="days"
+          streakDays={streaks.monthlyDrinkingDays}
+        />
       </section>
 
       <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">

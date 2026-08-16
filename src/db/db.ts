@@ -14,6 +14,21 @@ class TallyDB extends Dexie {
       settings: 'id',
       presets: '++id',
     });
+    // v2 adds Settings.createdAt (the streak floor) — backfill it for anyone upgrading in place.
+    this.version(2)
+      .stores({
+        drinks: '++id, timestamp',
+        settings: 'id',
+        presets: '++id',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table('settings')
+          .toCollection()
+          .modify((s: Settings) => {
+            if (!s.createdAt) s.createdAt = Date.now();
+          });
+      });
   }
 }
 
@@ -24,7 +39,7 @@ export async function seedDefaults(): Promise<void> {
   await db.transaction('rw', db.settings, db.presets, async () => {
     const existingSettings = await db.settings.get(1);
     if (!existingSettings) {
-      await db.settings.put(DEFAULT_SETTINGS);
+      await db.settings.put({ ...DEFAULT_SETTINGS, createdAt: Date.now() });
     }
 
     const presetCount = await db.presets.count();
