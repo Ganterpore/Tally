@@ -49,6 +49,19 @@ npm run preview
 `npm run build` type-checks with `tsc -b` and outputs a production build
 (including the service worker) to `dist/`.
 
+## Tests
+
+```bash
+npm test          # run once
+npm run test:watch
+```
+
+[Vitest](https://vitest.dev/) covers the pure logic in `src/lib/` — standard
+drink calculations, rolling-window date math, aggregation, and the
+under-the-limit streak calculation — with no DOM or database involved.
+Component- and hook-level tests (forms, live Dexie queries) aren't covered
+yet.
+
 ## Data model
 
 Three Dexie tables in the `tally-db` database:
