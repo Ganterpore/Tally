@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { useSettings, updateSettings } from '../hooks/useSettings';
@@ -19,6 +19,13 @@ function NumberField({
   suffix: string;
 }) {
   const [local, setLocal] = useState(String(value));
+
+  // `value` starts out as DEFAULT_SETTINGS (a placeholder) and is replaced moments later once the
+  // real settings row loads from IndexedDB — resync so the field doesn't get stuck showing the
+  // placeholder that happened to be there on first render.
+  useEffect(() => {
+    setLocal(String(value));
+  }, [value]);
 
   function commit() {
     const n = parseFloat(local);

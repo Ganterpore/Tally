@@ -22,11 +22,14 @@ export function countDrinkingDays(drinks: DrinkEntry[]): number {
 
 export type LimitLevel = 'ok' | 'warning' | 'over';
 
-/** ok < 80% of limit, warning 80-100%, over 100%+. A zero/undefined limit is always "ok". */
+/**
+ * ok < 80% of limit, warning 80-100% (inclusive — landing exactly on the limit is a caution, not
+ * a breach), over only once strictly past it. A zero/undefined limit is always "ok".
+ */
 export function levelFor(value: number, limit: number): LimitLevel {
   if (!limit || limit <= 0) return 'ok';
   const ratio = value / limit;
-  if (ratio >= 1) return 'over';
+  if (ratio > 1) return 'over';
   if (ratio >= 0.8) return 'warning';
   return 'ok';
 }

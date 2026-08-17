@@ -86,6 +86,8 @@ export function LogTab() {
         />
       </section>
 
+      <hr className="border-slate-800" />
+
       <section>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Add a drink</h2>
         <AddDrinkForm presets={presets} targetDay={now} showTimePicker={false} onAdd={handleAdd} />
