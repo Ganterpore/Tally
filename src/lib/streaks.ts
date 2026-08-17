@@ -37,11 +37,13 @@ export interface StreakContext {
 }
 
 /**
- * Walks backward from today one calendar day at a time, counting how many consecutive days
- * stayed at or under `limit`. Stops at the first breach, or at `floor` (we have no idea what
- * happened before tracking started, so those days aren't credited). A limit of 0/undefined is
- * treated the same way it is everywhere else in the app — "not set" — so it never produces a
- * streak.
+ * Counts how many *complete* consecutive days before today stayed at or under `limit` — zero-based,
+ * like an array: the day you first land under the limit reads 0 (nothing to show yet), and it
+ * becomes 1 the day after, once a full day has actually elapsed under it. Today itself is only
+ * ever a gate (must also be under `limit` for the streak to count at all), never part of the
+ * number shown. Stops at the first breach, or at `floor` (we have no idea what happened before
+ * tracking started, so those days aren't credited). A limit of 0/undefined is treated the same way
+ * it is everywhere else in the app — "not set" — so it never produces a streak.
  *
  * `today` is checked against `todayValue`, not `metricFor` — the on-screen bars use an exact
  * rolling window ending *now* (e.g. "the last 7×24 hours"), which can touch one more calendar day
@@ -62,7 +64,7 @@ function computeStreak(
 
   const floorStart = startOfDay(floor).getTime();
   let day = subDays(startOfDay(today), 1);
-  let streak = 1; // today already passed the check above
+  let streak = 0; // today only gates whether we count at all — it's never part of the number itself
   while (day.getTime() >= floorStart) {
     if (metricFor(day) > limit) break;
     streak++;
