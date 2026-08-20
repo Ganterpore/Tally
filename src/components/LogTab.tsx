@@ -3,7 +3,7 @@ import { usePresets } from '../hooks/usePresets';
 import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
 import { useNow } from '../hooks/useNow';
 import { useStreaks } from '../hooks/useStreaks';
-import { last24h, last7d } from '../lib/dates';
+import { last24h, last7d, last30d } from '../lib/dates';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { sumStandards, countDrinkingDays, levelFor } from '../lib/stats';
 import { LimitBar } from './LimitBar';
@@ -14,12 +14,14 @@ export function LogTab() {
   const now = useNow();
   const window24h = last24h(now);
   const window7d = last7d(now);
+  const window30d = last30d(now);
 
   const settings = useSettings();
   const presets = usePresets();
   const streaks = useStreaks(now);
   const last24hDrinks = useDrinksInRange(window24h.start, window24h.end);
   const last7dDrinks = useDrinksInRange(window7d.start, window7d.end);
+  const last30dDrinks = useDrinksInRange(window30d.start, window30d.end);
 
   const addDrink = useAddDrink();
   const deleteDrink = useDeleteDrink();
@@ -27,12 +29,15 @@ export function LogTab() {
   const total24h = sumStandards(last24hDrinks);
   const total7d = sumStandards(last7dDrinks);
   const drinkingDays7d = countDrinkingDays(last7dDrinks);
+  const drinkingDays30d = countDrinkingDays(last30dDrinks);
 
   const breaches = [
     levelFor(total24h, settings.dailyStandardsLimit) === 'over' && 'your last-24-hour standard drinks limit',
     levelFor(total7d, settings.weeklyStandardsLimit) === 'over' && 'your last-7-day standard drinks limit',
     levelFor(drinkingDays7d, settings.weeklyDrinkingDaysLimit) === 'over' &&
       'your last-7-day drinking-days limit',
+    levelFor(drinkingDays30d, settings.monthlyDrinkingDaysLimit) === 'over' &&
+      'your last-30-day drinking-days limit',
   ].filter(Boolean) as string[];
 
   async function handleAdd(entry: NewDrink) {
@@ -83,6 +88,13 @@ export function LogTab() {
           limit={settings.weeklyDrinkingDaysLimit}
           suffix="days"
           streakDays={streaks.weeklyDrinkingDays}
+        />
+        <LimitBar
+          label="Drinking days (30d)"
+          value={drinkingDays30d}
+          limit={settings.monthlyDrinkingDaysLimit}
+          suffix="days"
+          streakDays={streaks.monthlyDrinkingDays}
         />
       </section>
 

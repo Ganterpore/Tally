@@ -18,7 +18,7 @@ import { usePresets } from '../hooks/usePresets';
 import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
 import { useNow } from '../hooks/useNow';
 import { useStreaks } from '../hooks/useStreaks';
-import { dayRange, last7d, last30d, weekStartsOn, dayKey } from '../lib/dates';
+import { dayRange, last24h, last7d, last30d, weekStartsOn, dayKey } from '../lib/dates';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { groupByDay, sumStandards, countDrinkingDays, levelFor, type LimitLevel } from '../lib/stats';
 import { LimitBar } from './LimitBar';
@@ -54,14 +54,17 @@ export function HistoryTab() {
   const monthDrinksForGrid = useDrinksInRange(gridStart.getTime(), gridEnd.getTime());
   const byDay = useMemo(() => groupByDay(monthDrinksForGrid), [monthDrinksForGrid]);
 
+  const window24h = last24h(now);
   const window7d = last7d(now);
   const window30d = last30d(now);
   const selectedRange = dayRange(selectedDay);
 
+  const last24hDrinks = useDrinksInRange(window24h.start, window24h.end);
   const last7dDrinks = useDrinksInRange(window7d.start, window7d.end);
   const last30dDrinks = useDrinksInRange(window30d.start, window30d.end);
   const selectedDayDrinks = useDrinksInRange(selectedRange.start, selectedRange.end);
 
+  const total24h = sumStandards(last24hDrinks);
   const total7d = sumStandards(last7dDrinks);
   const drinkingDays7d = countDrinkingDays(last7dDrinks);
   const drinkingDays30d = countDrinkingDays(last30dDrinks);
@@ -86,6 +89,14 @@ export function HistoryTab() {
       </header>
 
       <section className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <LimitBar
+          label="Last 24 hours"
+          value={roundStandards(total24h)}
+          limit={settings.dailyStandardsLimit}
+          formatValue={formatStandards}
+          suffix="standards"
+          streakDays={streaks.daily}
+        />
         <LimitBar
           label="Last 7 days"
           value={roundStandards(total7d)}
