@@ -82,7 +82,7 @@ export function AddDrinkForm({ presets, targetDay, showTimePicker, onAdd }: AddD
               onClick={() => addPreset(p)}
               className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:border-brand hover:text-brand"
             >
-              {p.label}
+              {p.label} <i className="text-slate-500">({p.volumeMl}ml, {p.abvPercent}%)</i>
             </button>
           ))}
         </div>

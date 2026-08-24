@@ -41,9 +41,8 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 export const DEFAULT_PRESETS: Omit<Preset, 'id'>[] = [
-  { label: 'Full-strength beer (375mL can, 4.8%)', volumeMl: 375, abvPercent: 4.8 },
-  { label: 'Mid-strength beer (375mL can, 3.5%)', volumeMl: 375, abvPercent: 3.5 },
-  { label: 'Glass of wine (150mL, 13%)', volumeMl: 150, abvPercent: 13 },
-  { label: 'Spirit nip (30mL, 40%)', volumeMl: 30, abvPercent: 40 },
-  { label: 'Glass of champagne (150mL, 12%)', volumeMl: 150, abvPercent: 12 },
+  { label: 'Can of Beer', volumeMl: 375, abvPercent: 4.5 },
+  { label: 'Pint of Beer', volumeMl: 575, abvPercent: 4.5 },
+  { label: 'Glass of Wine', volumeMl: 150, abvPercent: 13 },
+  { label: 'Shot', volumeMl: 30, abvPercent: 40 },
 ];

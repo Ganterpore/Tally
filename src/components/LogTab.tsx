@@ -98,6 +98,9 @@ export function LogTab() {
         />
       </section>
 
+      <section>
+        <div style={{ height: '100px' }}/>
+      </section>
       <hr className="border-slate-800" />
 
       <section>
