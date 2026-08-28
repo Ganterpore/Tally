@@ -95,7 +95,7 @@ function LimitsSection() {
           onCommit={(n) => set({ weeklyDrinkingDaysLimit: n })}
         />
         <NumberField
-          label="Drinking days per 30d"
+          label="Drinking days per 28d"
           value={settings.monthlyDrinkingDaysLimit}
           step={1}
           suffix="days"

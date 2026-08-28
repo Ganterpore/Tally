@@ -155,18 +155,18 @@ describe('weeklyDrinkingDaysStreak', () => {
 describe('monthlyDrinkingDaysStreak', () => {
   const limit = 25;
 
-  it('walks back while every trailing 30-day window stays at or under the limit', () => {
+  it('walks back while every trailing 28-day window stays at or under the limit', () => {
     const entries: Record<number, number> = {};
     for (let d = 1; d <= 10; d++) entries[d] = 1; // only 10 distinct drinking days, well under 25
     const totals = totalsMap(entries);
     expect(monthlyDrinkingDaysStreak(ctx(totals, 15), limit, 10)).toBe(15); // day-1..day-15 (= floor)
   });
 
-  it('stops as soon as a trailing 30-day window exceeds the limit', () => {
+  it('stops as soon as a trailing 28-day window exceeds the limit', () => {
     const entries: Record<number, number> = {};
     for (let d = 1; d <= 40; d++) entries[d] = 1; // drank every day for 40 days straight
     const totals = totalsMap(entries);
-    // First past-day check (day-1) covers days 1..30, all drinking days: 30 > 25 — breaches
+    // First past-day check (day-1) covers days 1..28, all drinking days: 28 > 25 — breaches
     // immediately.
     expect(monthlyDrinkingDaysStreak(ctx(totals, 45), limit, 20)).toBe(0);
   });

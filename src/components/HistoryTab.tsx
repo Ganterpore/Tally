@@ -18,7 +18,7 @@ import { usePresets } from '../hooks/usePresets';
 import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
 import { useNow } from '../hooks/useNow';
 import { useStreaks } from '../hooks/useStreaks';
-import { dayRange, last24h, last7d, last30d, weekStartsOn, dayKey } from '../lib/dates';
+import { dayRange, last24h, last7d, last28d, weekStartsOn, dayKey } from '../lib/dates';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { groupByDay, sumStandards, countDrinkingDays, levelFor, type LimitLevel } from '../lib/stats';
 import { LimitBar } from './LimitBar';
@@ -56,18 +56,18 @@ export function HistoryTab() {
 
   const window24h = last24h(now);
   const window7d = last7d(now);
-  const window30d = last30d(now);
+  const window28d = last28d(now);
   const selectedRange = dayRange(selectedDay);
 
   const last24hDrinks = useDrinksInRange(window24h.start, window24h.end);
   const last7dDrinks = useDrinksInRange(window7d.start, window7d.end);
-  const last30dDrinks = useDrinksInRange(window30d.start, window30d.end);
+  const last28dDrinks = useDrinksInRange(window28d.start, window28d.end);
   const selectedDayDrinks = useDrinksInRange(selectedRange.start, selectedRange.end);
 
   const total24h = sumStandards(last24hDrinks);
   const total7d = sumStandards(last7dDrinks);
   const drinkingDays7d = countDrinkingDays(last7dDrinks);
-  const drinkingDays30d = countDrinkingDays(last30dDrinks);
+  const drinkingDays28d = countDrinkingDays(last28dDrinks);
 
   const isFutureDay = isAfter(startOfDay(selectedDay), startOfDay(now));
 
@@ -113,8 +113,8 @@ export function HistoryTab() {
           streakDays={streaks.weeklyDrinkingDays}
         />
         <LimitBar
-          label="Drinking days (30d)"
-          value={drinkingDays30d}
+          label="Drinking days (28d)"
+          value={drinkingDays28d}
           limit={settings.monthlyDrinkingDaysLimit}
           suffix="days"
           streakDays={streaks.monthlyDrinkingDays}

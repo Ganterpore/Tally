@@ -35,8 +35,8 @@ export const DEFAULT_SETTINGS: Settings = {
   id: 1,
   dailyStandardsLimit: 4,
   weeklyStandardsLimit: 10,
-  weeklyDrinkingDaysLimit: 7,
-  monthlyDrinkingDaysLimit: 31,
+  weeklyDrinkingDaysLimit: 3,
+  monthlyDrinkingDaysLimit: 10,
   createdAt: Date.now(),
 };
 

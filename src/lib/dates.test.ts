@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayKey, dayRange, last24h, last7d, last30d, rollingWindow } from './dates';
+import { dayKey, dayRange, last24h, last7d, last28d, rollingWindow } from './dates';
 
 describe('dayRange', () => {
   it('spans local midnight to just before the next midnight', () => {
@@ -49,19 +49,19 @@ describe('rollingWindow', () => {
   });
 });
 
-describe('last24h / last7d / last30d', () => {
+describe('last24h / last7d / last28d', () => {
   const end = new Date(2026, 7, 17, 15, 0);
 
   it('use the expected hour multiples', () => {
     expect(last24h(end).end - last24h(end).start).toBe(24 * 60 * 60 * 1000);
     expect(last7d(end).end - last7d(end).start).toBe(24 * 7 * 60 * 60 * 1000);
-    expect(last30d(end).end - last30d(end).start).toBe(24 * 30 * 60 * 60 * 1000);
+    expect(last28d(end).end - last28d(end).start).toBe(24 * 28 * 60 * 60 * 1000);
   });
 
   it('all end at the same instant', () => {
     expect(last24h(end).end).toBe(end.getTime());
     expect(last7d(end).end).toBe(end.getTime());
-    expect(last30d(end).end).toBe(end.getTime());
+    expect(last28d(end).end).toBe(end.getTime());
   });
 });
 

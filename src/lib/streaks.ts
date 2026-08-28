@@ -102,5 +102,5 @@ export function monthlyDrinkingDaysStreak(
   limit: number,
   todayValue: number,
 ): number {
-  return computeStreak(limit, floor, today, todayValue, (day) => trailingDrinkingDays(totals, day, 30));
+  return computeStreak(limit, floor, today, todayValue, (day) => trailingDrinkingDays(totals, day, 28));
 }

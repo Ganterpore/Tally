@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { useSettings } from './useSettings';
-import { last24h, last7d, last30d } from '../lib/dates';
+import { last24h, last7d, last28d } from '../lib/dates';
 import { sumStandards, countDrinkingDays } from '../lib/stats';
 import {
   dailyTotalsMap,
@@ -41,11 +41,11 @@ export function useStreaks(now: Date): Streaks {
     // never disagree with whether the bar is currently drawn as over the limit.
     const w24 = last24h(now);
     const w7 = last7d(now);
-    const w30 = last30d(now);
+    const w28 = last28d(now);
     const todayDaily = sumStandards(inWindow(allDrinks, w24.start, w24.end));
     const todayWeeklyStandards = sumStandards(inWindow(allDrinks, w7.start, w7.end));
     const todayWeeklyDrinkingDays = countDrinkingDays(inWindow(allDrinks, w7.start, w7.end));
-    const todayMonthlyDrinkingDays = countDrinkingDays(inWindow(allDrinks, w30.start, w30.end));
+    const todayMonthlyDrinkingDays = countDrinkingDays(inWindow(allDrinks, w28.start, w28.end));
 
     return {
       daily: dailyStandardsStreak(ctx, settings.dailyStandardsLimit, todayDaily),

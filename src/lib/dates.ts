@@ -17,7 +17,7 @@ export function rollingWindow(hours: number, end: Date = new Date()) {
 
 export const last24h = (end?: Date) => rollingWindow(24, end);
 export const last7d = (end?: Date) => rollingWindow(24 * 7, end);
-export const last30d = (end?: Date) => rollingWindow(24 * 30, end);
+export const last28d = (end?: Date) => rollingWindow(24 * 28, end);
 
 export function dayKey(timestamp: number): string {
   return format(timestamp, 'yyyy-MM-dd');
