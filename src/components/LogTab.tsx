@@ -101,7 +101,7 @@ export function LogTab() {
       </section>
 
       <section className="flex min-h-[100px] items-center justify-center text-center">
-        <p className="text-sm text-slate-400">{lastDrinkMessage(lastDrink?.timestamp, now)}</p>
+        <h1 className="text-2xl font-semibold text-slate-100">{lastDrinkMessage(lastDrink?.timestamp, now)}</h1>
       </section>
       <hr className="border-slate-800" />
 
