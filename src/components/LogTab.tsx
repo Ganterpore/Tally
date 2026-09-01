@@ -1,9 +1,10 @@
 import { useSettings } from '../hooks/useSettings';
 import { usePresets } from '../hooks/usePresets';
-import { useAddDrink, useDeleteDrink, useDrinksInRange } from '../hooks/useDrinks';
+import { useAddDrink, useDeleteDrink, useDrinksInRange, useLastDrink } from '../hooks/useDrinks';
 import { useNow } from '../hooks/useNow';
 import { useStreaks } from '../hooks/useStreaks';
 import { last24h, last7d, last28d } from '../lib/dates';
+import { lastDrinkMessage } from '../lib/lastDrinkMessage';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { sumStandards, countDrinkingDays, levelFor } from '../lib/stats';
 import { LimitBar } from './LimitBar';
@@ -19,6 +20,7 @@ export function LogTab() {
   const settings = useSettings();
   const presets = usePresets();
   const streaks = useStreaks(now);
+  const lastDrink = useLastDrink();
   const last24hDrinks = useDrinksInRange(window24h.start, window24h.end);
   const last7dDrinks = useDrinksInRange(window7d.start, window7d.end);
   const last28dDrinks = useDrinksInRange(window28d.start, window28d.end);
@@ -98,8 +100,8 @@ export function LogTab() {
         />
       </section>
 
-      <section>
-        <div style={{ height: '100px' }}/>
+      <section className="flex min-h-[100px] items-center justify-center text-center">
+        <p className="text-sm text-slate-400">{lastDrinkMessage(lastDrink?.timestamp, now)}</p>
       </section>
       <hr className="border-slate-800" />
 

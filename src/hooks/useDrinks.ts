@@ -12,6 +12,11 @@ export function useDrinksInRange(startMs: number, endMs: number): DrinkEntry[] {
   );
 }
 
+/** The most recently logged drink (by timestamp), or undefined if none exist yet. */
+export function useLastDrink(): DrinkEntry | undefined {
+  return useLiveQuery(() => db.drinks.orderBy('timestamp').last(), []);
+}
+
 export function useAddDrink() {
   return async (entry: Omit<DrinkEntry, 'id'>) => {
     await db.drinks.add(entry);
