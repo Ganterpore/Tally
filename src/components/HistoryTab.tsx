@@ -34,7 +34,7 @@ const DOT_COLOR: Record<LimitLevel, string> = {
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export function HistoryTab() {
-  const now = useNow();
+  const { now, refreshNow } = useNow();
   const [cursor, setCursor] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState<Date>(() => new Date());
 
@@ -79,6 +79,7 @@ export function HistoryTab() {
       standards: roundStandards(calcStandards(entry.volumeMl, entry.abvPercent)),
       label: entry.label,
     });
+    refreshNow();
   }
 
   return (

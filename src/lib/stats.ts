@@ -20,6 +20,20 @@ export function countDrinkingDays(drinks: DrinkEntry[]): number {
   return groupByDay(drinks).size;
 }
 
+const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Average standard drinks per week across the app's whole lifetime, from `floor` (when tracking
+ * started) through `now`. Elapsed time is floored at a day so a fresh install doesn't produce a
+ * wildly inflated rate off just a few hours of data. Returns null when there's no floor yet (no
+ * settings/drinks at all), matching how the rest of the lifetime stats report "nothing yet".
+ */
+export function averageStandardsPerWeek(drinks: DrinkEntry[], floor: Date | null, now: Date): number | null {
+  if (!floor) return null;
+  const msElapsed = Math.max(now.getTime() - floor.getTime(), 24 * 60 * 60 * 1000);
+  return sumStandards(drinks) / (msElapsed / MS_PER_WEEK);
+}
+
 export type LimitLevel = 'ok' | 'warning' | 'over';
 
 /**

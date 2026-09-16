@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { useSettings } from './useSettings';
 import { last24h, last7d, last28d } from '../lib/dates';
-import { sumStandards, countDrinkingDays } from '../lib/stats';
+import { sumStandards, countDrinkingDays, averageStandardsPerWeek } from '../lib/stats';
 import {
   dailyTotalsMap,
   dailyStandardsStreak,
@@ -19,6 +19,8 @@ export interface Streaks {
   weeklyStandards: number;
   weeklyDrinkingDays: number;
   monthlyDrinkingDays: number;
+  /** Lifetime average standard drinks/week, from first use to now. Null until there's a floor. */
+  averagePerWeek: number | null;
 }
 
 function inWindow(drinks: DrinkEntry[], start: number, end: number): DrinkEntry[] {
@@ -60,6 +62,7 @@ export function useStreaks(now: Date): Streaks {
         settings.monthlyDrinkingDaysLimit,
         todayMonthlyDrinkingDays,
       ),
+      averagePerWeek: averageStandardsPerWeek(allDrinks, floor, now),
     };
   }, [allDrinks, settings, now]);
 }

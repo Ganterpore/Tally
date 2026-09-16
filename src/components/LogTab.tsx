@@ -12,7 +12,7 @@ import { AddDrinkForm, type NewDrink } from './AddDrinkForm';
 import { DrinkList } from './DrinkList';
 
 export function LogTab() {
-  const now = useNow();
+  const { now, refreshNow } = useNow();
   const window24h = last24h(now);
   const window7d = last7d(now);
   const window28d = last28d(now);
@@ -50,6 +50,7 @@ export function LogTab() {
       standards: roundStandards(calcStandards(entry.volumeMl, entry.abvPercent)),
       label: entry.label,
     });
+    refreshNow();
   }
 
   return (
@@ -100,8 +101,13 @@ export function LogTab() {
         />
       </section>
 
-      <section className="flex min-h-[100px] items-center justify-center text-center">
+      <section className="flex min-h-[100px] flex-col items-center justify-center gap-1 text-center">
         <h1 className="text-2xl font-semibold text-slate-100">{lastDrinkMessage(lastDrink?.timestamp, now)}</h1>
+        {streaks.averagePerWeek !== null && (
+          <p className="text-sm text-slate-400">
+            Averaging {formatStandards(streaks.averagePerWeek)} standards/week since you started tracking.
+          </p>
+        )}
       </section>
       <hr className="border-slate-800" />
 
