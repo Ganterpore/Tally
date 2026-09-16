@@ -3,13 +3,21 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { useSettings } from './useSettings';
 import { last24h, last7d, last28d } from '../lib/dates';
-import { sumStandards, countDrinkingDays, averageStandardsPerWeek } from '../lib/stats';
+import {
+  sumStandards,
+  countDrinkingDays,
+  averageStandardsPerWeek,
+  averageStandardsPerDay,
+  averageStandardsPerDrinkingDay,
+} from '../lib/stats';
 import {
   dailyTotalsMap,
   dailyStandardsStreak,
   weeklyStandardsStreak,
   weeklyDrinkingDaysStreak,
   monthlyDrinkingDaysStreak,
+  averageDailyStandardsStreakLength,
+  averageWeeklyStandardsStreakLength,
   type StreakContext,
 } from '../lib/streaks';
 import type { DrinkEntry } from '../types';
@@ -21,6 +29,14 @@ export interface Streaks {
   monthlyDrinkingDays: number;
   /** Lifetime average standard drinks/week, from first use to now. Null until there's a floor. */
   averagePerWeek: number | null;
+  /** Lifetime average standard drinks/day, including dry days. Null until there's a floor. */
+  averagePerDay: number | null;
+  /** Lifetime average standard drinks on days that had any. Null until there's a drinking day. */
+  averagePerDrinkingDay: number | null;
+  /** Average length of every under-limit daily-standards run. Null until one has occurred. */
+  averageDailyStreakLength: number | null;
+  /** Average length of every under-limit weekly-standards run. Null until one has occurred. */
+  averageWeeklyStreakLength: number | null;
 }
 
 function inWindow(drinks: DrinkEntry[], start: number, end: number): DrinkEntry[] {
@@ -63,6 +79,10 @@ export function useStreaks(now: Date): Streaks {
         todayMonthlyDrinkingDays,
       ),
       averagePerWeek: averageStandardsPerWeek(allDrinks, floor, now),
+      averagePerDay: averageStandardsPerDay(allDrinks, floor, now),
+      averagePerDrinkingDay: averageStandardsPerDrinkingDay(allDrinks),
+      averageDailyStreakLength: averageDailyStandardsStreakLength(ctx, settings.dailyStandardsLimit),
+      averageWeeklyStreakLength: averageWeeklyStandardsStreakLength(ctx, settings.weeklyStandardsLimit),
     };
   }, [allDrinks, settings, now]);
 }

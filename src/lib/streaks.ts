@@ -104,3 +104,55 @@ export function monthlyDrinkingDaysStreak(
 ): number {
   return computeStreak(limit, floor, today, todayValue, (day) => trailingDrinkingDays(totals, day, 28));
 }
+
+/**
+ * Average length, in days, of every under-limit run between `floor` and yesterday — including
+ * whatever run is still in progress, counted as a lower bound. Complements the "current streak"
+ * badges with a lifetime view of how long a good run typically lasts. Returns null when there's
+ * no floor, the limit isn't set, or no under-limit day has occurred yet.
+ */
+function averageStreakLength(
+  limit: number,
+  floor: Date | null,
+  today: Date,
+  metricFor: (dayEnd: Date) => number,
+): number | null {
+  if (!floor || !Number.isFinite(limit) || limit <= 0) return null;
+
+  const floorStart = startOfDay(floor).getTime();
+  const days: Date[] = [];
+  let day = subDays(startOfDay(today), 1);
+  while (day.getTime() >= floorStart) {
+    days.push(day);
+    day = subDays(day, 1);
+  }
+
+  const runs: number[] = [];
+  let current = 0;
+  for (const d of days.reverse()) {
+    if (metricFor(d) <= limit) {
+      current++;
+    } else if (current > 0) {
+      runs.push(current);
+      current = 0;
+    }
+  }
+  if (current > 0) runs.push(current);
+
+  if (runs.length === 0) return null;
+  return runs.reduce((sum, r) => sum + r, 0) / runs.length;
+}
+
+export function averageDailyStandardsStreakLength(
+  { totals, today, floor }: StreakContext,
+  limit: number,
+): number | null {
+  return averageStreakLength(limit, floor, today, (day) => totals.get(dayKey(day.getTime())) ?? 0);
+}
+
+export function averageWeeklyStandardsStreakLength(
+  { totals, today, floor }: StreakContext,
+  limit: number,
+): number | null {
+  return averageStreakLength(limit, floor, today, (day) => trailingTotal(totals, day, 7));
+}

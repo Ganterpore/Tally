@@ -1,13 +1,17 @@
+import { useMemo } from 'react';
 import { useSettings } from '../hooks/useSettings';
 import { usePresets } from '../hooks/usePresets';
 import { useAddDrink, useDeleteDrink, useDrinksInRange, useLastDrink } from '../hooks/useDrinks';
 import { useNow } from '../hooks/useNow';
 import { useStreaks } from '../hooks/useStreaks';
+import { useRotatingStatKey } from '../hooks/useRotatingStatKey';
 import { last24h, last7d, last28d } from '../lib/dates';
-import { lastDrinkMessage } from '../lib/lastDrinkMessage';
+import { hasDrinkToday, lastDrinkMessage } from '../lib/lastDrinkMessage';
+import { buildRotatingStats } from '../lib/rotatingStats';
 import { calcStandards, roundStandards, formatStandards } from '../lib/standards';
 import { sumStandards, countDrinkingDays, levelFor } from '../lib/stats';
 import { LimitBar } from './LimitBar';
+import { RotatingHeader } from './RotatingHeader';
 import { AddDrinkForm, type NewDrink } from './AddDrinkForm';
 import { DrinkList } from './DrinkList';
 
@@ -27,6 +31,25 @@ export function LogTab() {
 
   const addDrink = useAddDrink();
   const deleteDrink = useDeleteDrink();
+
+  const drankToday = hasDrinkToday(lastDrink?.timestamp, now);
+  const lastDrinkText = lastDrinkMessage(lastDrink?.timestamp, now);
+
+  const rotatingStats = useMemo(
+    () =>
+      buildRotatingStats({
+        sinceLastDrinkText: drankToday ? null : lastDrinkText,
+        averagePerWeek: streaks.averagePerWeek,
+        averagePerDay: streaks.averagePerDay,
+        averagePerDrinkingDay: streaks.averagePerDrinkingDay,
+        averageDailyStreakLength: streaks.averageDailyStreakLength,
+        averageWeeklyStreakLength: streaks.averageWeeklyStreakLength,
+      }),
+    [drankToday, lastDrinkText, streaks],
+  );
+  const rotatingKeysSignature = rotatingStats.map((s) => s.key).join(',');
+  const selectedKey = useRotatingStatKey(rotatingKeysSignature);
+  const selectedStat = rotatingStats.find((s) => s.key === selectedKey) ?? rotatingStats[0];
 
   const total24h = sumStandards(last24hDrinks);
   const total7d = sumStandards(last7dDrinks);
@@ -101,12 +124,11 @@ export function LogTab() {
         />
       </section>
 
-      <section className="flex min-h-[100px] flex-col items-center justify-center gap-1 text-center">
-        <h1 className="text-2xl font-semibold text-slate-100">{lastDrinkMessage(lastDrink?.timestamp, now)}</h1>
-        {streaks.averagePerWeek !== null && (
-          <p className="text-sm text-slate-400">
-            Average {formatStandards(streaks.averagePerWeek)} standards per week
-          </p>
+      <section className="flex min-h-[100px] items-center justify-center text-center">
+        {drankToday ? (
+          <h1 className="text-2xl font-semibold text-slate-100">{lastDrinkText}</h1>
+        ) : (
+          selectedStat && <RotatingHeader statKey={selectedStat.key} text={selectedStat.text} />
         )}
       </section>
       <hr className="border-slate-800" />

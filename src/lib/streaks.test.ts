@@ -8,6 +8,8 @@ import {
   monthlyDrinkingDaysStreak,
   weeklyDrinkingDaysStreak,
   weeklyStandardsStreak,
+  averageDailyStandardsStreakLength,
+  averageWeeklyStandardsStreakLength,
   type StreakContext,
 } from './streaks';
 
@@ -149,6 +151,51 @@ describe('weeklyDrinkingDaysStreak', () => {
     const todayRollingValue = 8; // what the bar itself is showing right now
 
     expect(weeklyDrinkingDaysStreak(ctx(totals, 6), 7, todayRollingValue)).toBe(0);
+  });
+});
+
+describe('averageDailyStandardsStreakLength', () => {
+  const limit = 4;
+
+  it('is null when there is no floor', () => {
+    expect(averageDailyStandardsStreakLength(ctx(totalsMap({}), null), limit)).toBeNull();
+  });
+
+  it('is null when the limit is not set', () => {
+    expect(averageDailyStandardsStreakLength(ctx(totalsMap({}), 10), 0)).toBeNull();
+  });
+
+  it('is null when every day on record breached the limit', () => {
+    const totals = totalsMap({ 1: 10, 2: 10, 3: 10 });
+    expect(averageDailyStandardsStreakLength(ctx(totals, 3), limit)).toBeNull();
+  });
+
+  it('averages the length of every under-limit run, including the run still in progress', () => {
+    // day-5..day-4 under (run of 2), day-3 breaches, day-2..day-1 under (run of 2, still ongoing).
+    const totals = totalsMap({ 5: 1, 4: 1, 3: 10, 2: 1, 1: 1 });
+    expect(averageDailyStandardsStreakLength(ctx(totals, 5), limit)).toBeCloseTo(2, 10);
+  });
+
+  it('treats a day with no recorded total as under the limit (0 standards)', () => {
+    // Only day-2 has any data; day-1 and day-3 are implicitly dry days, so the whole floor->
+    // yesterday span is one unbroken run.
+    const totals = totalsMap({ 2: 1 });
+    expect(averageDailyStandardsStreakLength(ctx(totals, 3), limit)).toBe(3);
+  });
+});
+
+describe('averageWeeklyStandardsStreakLength', () => {
+  const limit = 10;
+
+  it('is null with no floor', () => {
+    expect(averageWeeklyStandardsStreakLength(ctx(totalsMap({}), null), limit)).toBeNull();
+  });
+
+  it('averages completed trailing-7-day-under-limit runs', () => {
+    const entries: Record<number, number> = {};
+    for (let d = 1; d <= 20; d++) entries[d] = 1; // 1/day -> every 7-day window sums to 7, always ok
+    const totals = totalsMap(entries);
+    expect(averageWeeklyStandardsStreakLength(ctx(totals, 20), limit)).toBe(20);
   });
 });
 

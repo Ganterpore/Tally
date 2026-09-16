@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { averageStandardsPerWeek, countDrinkingDays, groupByDay, levelFor, sumStandards } from './stats';
+import {
+  averageStandardsPerWeek,
+  averageStandardsPerDay,
+  averageStandardsPerDrinkingDay,
+  countDrinkingDays,
+  groupByDay,
+  levelFor,
+  sumStandards,
+} from './stats';
 import type { DrinkEntry } from '../types';
 
 function drink(timestamp: number, standards: number): DrinkEntry {
@@ -65,6 +73,33 @@ describe('averageStandardsPerWeek', () => {
     const drinks = [drink(AUG17_9AM, 1)];
     // Clamped to 1 day elapsed => 1 standard * 7 days/week = 7/week, not a huge spike.
     expect(averageStandardsPerWeek(drinks, floor, fiveMinutesLater)).toBeCloseTo(7, 10);
+  });
+});
+
+describe('averageStandardsPerDay', () => {
+  it('is null with no floor', () => {
+    expect(averageStandardsPerDay([], null, new Date(AUG18_9AM))).toBeNull();
+  });
+
+  it('averages total standards over elapsed days since the floor', () => {
+    const floor = new Date(AUG17_9AM);
+    const fourDaysLater = new Date(AUG17_9AM + 4 * 24 * 60 * 60 * 1000);
+    const drinks = [drink(AUG17_9AM, 4), drink(AUG18_9AM, 4)];
+    // 8 standards over 4 days = 2/day.
+    expect(averageStandardsPerDay(drinks, floor, fourDaysLater)).toBeCloseTo(2, 10);
+  });
+});
+
+describe('averageStandardsPerDrinkingDay', () => {
+  it('is null with no drinking days', () => {
+    expect(averageStandardsPerDrinkingDay([])).toBeNull();
+  });
+
+  it('averages only over days that had a drink, ignoring dry days entirely', () => {
+    // 2 drinking days (Aug 17 + Aug 18), 4.4 standards total => 2.2/drinking day, regardless of
+    // how many calendar days sit either side of them.
+    const drinks = [drink(AUG17_9AM, 1.4), drink(AUG17_9PM, 0.9), drink(AUG18_9AM, 2.1)];
+    expect(averageStandardsPerDrinkingDay(drinks)).toBeCloseTo(2.2, 10);
   });
 });
 

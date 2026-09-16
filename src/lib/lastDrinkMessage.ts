@@ -8,17 +8,24 @@ export function isDaytime(now: Date): boolean {
 }
 
 /**
+ * Whether the most recent drink falls on today's calendar day. Deliberately keyed off the
+ * calendar day rather than the rolling 24h window the limit bars use, since "today" is what reads
+ * naturally in the messaging that uses this.
+ */
+export function hasDrinkToday(lastDrinkTimestamp: number | undefined, now: Date): boolean {
+  if (lastDrinkTimestamp === undefined) return false;
+  return lastDrinkTimestamp >= dayRange(now).start;
+}
+
+/**
  * The encouragement line shown on the Log page below the limit bars: a nudge about how long it's
  * been since the last drink, or — if today's calendar day already has one — a reminder to pace
- * responsibly. Deliberately keyed off the calendar day rather than the rolling 24h window the
- * limit bars use, since "today" is what reads naturally here. Returns null when there's no drink
- * history to talk about yet.
+ * responsibly. Returns null when there's no drink history to talk about yet.
  */
 export function lastDrinkMessage(lastDrinkTimestamp: number | undefined, now: Date): string | null {
   if (lastDrinkTimestamp === undefined) return null;
 
-  const { start: todayStart } = dayRange(now);
-  if (lastDrinkTimestamp >= todayStart) {
+  if (hasDrinkToday(lastDrinkTimestamp, now)) {
     return `Enjoy your ${isDaytime(now) ? 'day' : 'night'} responsibly.`;
   }
 

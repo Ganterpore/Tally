@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isDaytime, lastDrinkMessage } from './lastDrinkMessage';
+import { hasDrinkToday, isDaytime, lastDrinkMessage } from './lastDrinkMessage';
 
 describe('isDaytime', () => {
   it('is true from 6am up to (not including) 6pm', () => {
@@ -11,6 +11,22 @@ describe('isDaytime', () => {
     expect(isDaytime(new Date(2026, 7, 17, 5, 59))).toBe(false);
     expect(isDaytime(new Date(2026, 7, 17, 18, 0))).toBe(false);
     expect(isDaytime(new Date(2026, 7, 17, 23, 0))).toBe(false);
+  });
+});
+
+describe('hasDrinkToday', () => {
+  const now = new Date(2026, 7, 17, 15, 0);
+
+  it('is false with no drink history', () => {
+    expect(hasDrinkToday(undefined, now)).toBe(false);
+  });
+
+  it('is true when the last drink was earlier the same calendar day', () => {
+    expect(hasDrinkToday(new Date(2026, 7, 17, 10, 0).getTime(), now)).toBe(true);
+  });
+
+  it('is false when the last drink was yesterday, even if under 24 hours ago', () => {
+    expect(hasDrinkToday(new Date(2026, 7, 16, 23, 0).getTime(), new Date(2026, 7, 17, 0, 30))).toBe(false);
   });
 });
 
