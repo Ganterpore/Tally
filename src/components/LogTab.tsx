@@ -105,7 +105,7 @@ export function LogTab() {
         <h1 className="text-2xl font-semibold text-slate-100">{lastDrinkMessage(lastDrink?.timestamp, now)}</h1>
         {streaks.averagePerWeek !== null && (
           <p className="text-sm text-slate-400">
-            Averaging {formatStandards(streaks.averagePerWeek)} standards/week since you started tracking.
+            Average {formatStandards(streaks.averagePerWeek)} standards per week
           </p>
         )}
       </section>
