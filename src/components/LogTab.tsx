@@ -48,7 +48,7 @@ export function LogTab() {
     [drankToday, lastDrinkText, streaks],
   );
   const rotatingKeysSignature = rotatingStats.map((s) => s.key).join(',');
-  const selectedKey = useRotatingStatKey(rotatingKeysSignature);
+  const { selectedKey, next: nextStat } = useRotatingStatKey(rotatingKeysSignature, 10_000);
   const selectedStat = rotatingStats.find((s) => s.key === selectedKey) ?? rotatingStats[0];
 
   const total24h = sumStandards(last24hDrinks);
@@ -128,7 +128,23 @@ export function LogTab() {
         {drankToday ? (
           <h1 className="text-2xl font-semibold text-slate-100">{lastDrinkText}</h1>
         ) : (
-          selectedStat && <RotatingHeader statKey={selectedStat.key} text={selectedStat.text} />
+          selectedStat && (
+            <div className="flex items-center gap-2">
+              <RotatingHeader statKey={selectedStat.key} text={selectedStat.text} />
+              {rotatingStats.length > 1 && (
+                <button
+                  type="button"
+                  onClick={nextStat}
+                  aria-label="Show next stat"
+                  className="shrink-0 rounded-full p-1.5 text-slate-600 transition-colors hover:bg-slate-800 hover:text-slate-300"
+                >
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                    <path d="M7 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )
         )}
       </section>
       <hr className="border-slate-800" />
