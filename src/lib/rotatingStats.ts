@@ -32,24 +32,24 @@ export function buildRotatingStats(input: RotatingStatsInput): RotatingStat[] {
     stats.push({ key: 'perWeek', text: `Average ${formatStandards(input.averagePerWeek)} standards per week` });
   }
 
-  if (input.averagePerDay !== null && input.averagePerDrinkingDay !== null) {
+  if (input.averagePerDrinkingDay !== null) {
     stats.push({
       key: 'perDay',
-      text: `Average ${formatStandards(input.averagePerDay)} standards per day, ${formatStandards(input.averagePerDrinkingDay)} on days you drank`,
+      text: `Average ${formatStandards(input.averagePerDrinkingDay)} standards on days you drank`,
     });
   }
 
   if (input.averageDailyStreakLength !== null) {
     stats.push({
       key: 'streakDaily',
-      text: `Average streak length of ${formatStandards(input.averageDailyStreakLength)} days for standards per day`,
+      text: `Average ${formatStandards(input.averageDailyStreakLength)} days without going over your daily limit`,
     });
   }
 
   if (input.averageWeeklyStreakLength !== null) {
     stats.push({
       key: 'streakWeekly',
-      text: `Average streak length of ${formatStandards(input.averageWeeklyStreakLength)} days for standards per week`,
+      text: `Average  ${formatStandards(input.averageWeeklyStreakLength)} days without going over your weekly limit`,
     });
   }
 
