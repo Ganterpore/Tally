@@ -1,17 +1,15 @@
 import { useMemo, useState } from 'react';
 import {
-  addMonths,
+  addWeeks,
   eachDayOfInterval,
-  endOfMonth,
   endOfWeek,
   format,
   isAfter,
   isSameDay,
-  isSameMonth,
   isToday,
   startOfDay,
-  startOfMonth,
   startOfWeek,
+  subWeeks,
 } from 'date-fns';
 import { useSettings } from '../hooks/useSettings';
 import { usePresets } from '../hooks/usePresets';
@@ -32,6 +30,7 @@ const DOT_COLOR: Record<LimitLevel, string> = {
 };
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKS_IN_GRID = 5;
 
 export function HistoryTab() {
   const { now, refreshNow } = useNow();
@@ -44,15 +43,15 @@ export function HistoryTab() {
   const addDrink = useAddDrink();
   const deleteDrink = useDeleteDrink();
 
-  const gridStart = startOfWeek(startOfMonth(cursor), { weekStartsOn });
-  const gridEnd = endOfWeek(endOfMonth(cursor), { weekStartsOn });
+  const gridEnd = endOfWeek(cursor, { weekStartsOn });
+  const gridStart = subWeeks(startOfWeek(cursor, { weekStartsOn }), WEEKS_IN_GRID - 1);
   const gridDays = useMemo(
     () => eachDayOfInterval({ start: gridStart, end: gridEnd }),
     [gridStart, gridEnd],
   );
 
-  const monthDrinksForGrid = useDrinksInRange(gridStart.getTime(), gridEnd.getTime());
-  const byDay = useMemo(() => groupByDay(monthDrinksForGrid), [monthDrinksForGrid]);
+  const gridDrinks = useDrinksInRange(gridStart.getTime(), gridEnd.getTime());
+  const byDay = useMemo(() => groupByDay(gridDrinks), [gridDrinks]);
 
   const window24h = last24h(now);
   const window7d = last7d(now);
@@ -126,18 +125,20 @@ export function HistoryTab() {
         <div className="mb-3 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => setCursor((d) => addMonths(d, -1))}
+            onClick={() => setCursor((d) => subWeeks(d, 1))}
             className="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-            aria-label="Previous month"
+            aria-label="Previous week"
           >
             ←
           </button>
-          <h2 className="text-sm font-semibold text-slate-200">{format(cursor, 'MMMM yyyy')}</h2>
+          <h2 className="text-sm font-semibold text-slate-200">
+            {format(gridStart, 'd MMM')} – {format(gridEnd, 'd MMM yyyy')}
+          </h2>
           <button
             type="button"
-            onClick={() => setCursor((d) => addMonths(d, 1))}
+            onClick={() => setCursor((d) => addWeeks(d, 1))}
             className="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-            aria-label="Next month"
+            aria-label="Next week"
           >
             →
           </button>
@@ -156,7 +157,6 @@ export function HistoryTab() {
             const drinksThatDay = byDay.get(key) ?? [];
             const total = sumStandards(drinksThatDay);
             const level = levelFor(total, settings.dailyStandardsLimit);
-            const inMonth = isSameMonth(day, cursor);
             const selected = isSameDay(day, selectedDay);
 
             return (
@@ -164,9 +164,9 @@ export function HistoryTab() {
                 key={key}
                 type="button"
                 onClick={() => setSelectedDay(day)}
-                className={`relative flex aspect-square flex-col items-center justify-center rounded-lg text-sm transition-colors ${
+                className={`relative flex aspect-square flex-col items-center justify-center rounded-lg text-sm text-slate-200 transition-colors ${
                   selected ? 'bg-brand text-white' : 'hover:bg-slate-800'
-                } ${inMonth ? 'text-slate-200' : 'text-slate-600'}`}
+                }`}
               >
                 <span className={isToday(day) && !selected ? 'font-semibold text-brand' : ''}>
                   {format(day, 'd')}
